@@ -34,7 +34,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(778, 544);
+            this.ClientSize = new System.Drawing.Size(438, 173);
             this.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.Name = "View";
             this.Text = "Watch Out, Willi!";

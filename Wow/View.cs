@@ -25,11 +25,11 @@ namespace Wow
         {
             this.Game = g;
             DoubleBuffered = true;
-            ClientSize = new Size(800, 600);
             Tilesets = Directory.EnumerateFiles("Media/Tilesets")
                 .Select(f => new Bitmap(f)).ToList();
             Willi = new Bitmap("Media/Willi.png");
             InitializeComponent();
+            ClientSize = new Size(TileSize * Game.MapWidth, TileSize * Game.MapHeight);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -70,7 +70,7 @@ namespace Wow
             }            
             Invalidate();
             if (Game.WilliDead) MessageBox.Show("Willi is dead :( ");
-            if (Game.GameFinished()) MessageBox.Show("Congrats!");
+            if (Game.GameWon()) MessageBox.Show("Congrats!");
         }
     }
 }
