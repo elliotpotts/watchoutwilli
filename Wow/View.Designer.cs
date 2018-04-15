@@ -1,6 +1,6 @@
 ﻿namespace Wow
 {
-    partial class Form1
+    partial class View
     {
         /// <summary>
         /// Required designer variable.
@@ -28,9 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
+            this.SuspendLayout();
+            // 
+            // View
+            // 
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.BackColor = System.Drawing.Color.Black;
+            this.ClientSize = new System.Drawing.Size(778, 544);
+            this.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.Name = "View";
+            this.Text = "Watch Out, Willi!";
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.View_KeyPress);
+            this.ResumeLayout(false);
+
         }
 
         #endregion

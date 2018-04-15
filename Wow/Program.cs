@@ -16,7 +16,7 @@ namespace Wow
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new View(new Game("Media/Maps/test.txt")));
         }
     }
 }
