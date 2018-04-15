@@ -123,11 +123,11 @@ namespace Wow
         /// <param name="y">The starting y value</param>
         private void UpdateColumn(int x, int y)
         {
-            // If we're on map edge, do nothing
-            if (y == MapHeight - 1) return;
+            // Look downwards for a rock
+            while (Map[x, y] != Tile.Rock && y != MapHeight - 1) y++;
 
-            // If we're not on a rock, try the next column
-            if (Map[x, y] != Tile.Rock) { UpdateColumn(x, y + 1); return; }
+            // If we're on map edge, no rocks found - we're done
+            if (y == MapHeight - 1) return;
             
             // If we're sitting on a rock, update that first
             if (Map[x, y + 1] == Tile.Rock)
