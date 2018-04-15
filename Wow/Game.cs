@@ -33,8 +33,8 @@ namespace Wow
         /// <summary>
         /// Map tiles
         /// </summary>
-        public Tile?[,] Map { get; private set; }
-        
+        public Tile?[,] Map { get; private set; } = new Tile?[MapWidth, MapHeight];
+              
         /// <summary>
         /// x coordinate of Willi on the map
         /// </summary>
@@ -44,11 +44,11 @@ namespace Wow
         /// y coordinate of Willi on the map
         /// </summary>
         public int WilliY { get; private set; } = -1;
-        
+
         /// <summary>
         /// Has Willi been crushed by a rock yet?
         /// </summary>
-        public bool WilliDead { get; private set; }
+        public bool WilliDead { get; private set; } = false;
         
         /// <summary>
         /// Create a new game by reading a map from a text file
@@ -58,14 +58,13 @@ namespace Wow
         {
             using (StreamReader reader = new StreamReader(filename))
             {
-                Map = new Tile?[MapWidth, MapHeight];
                 for (int y = 0; y < MapHeight; y++)
                 {
                     for (int x = 0; x < MapWidth; x++)
                     {
-                        char TileChar = (char)reader.Read();
-                        if (TileChar == '\r') TileChar = (char)reader.Read();
-                        if (TileChar == '\n') TileChar = (char)reader.Read();
+                        char TileChar = Convert.ToChar(reader.Read());
+                        if (TileChar == '\r') TileChar = Convert.ToChar(reader.Read());
+                        if (TileChar == '\n') TileChar = Convert.ToChar(reader.Read());
                         switch (TileChar)
                         {
                             case 'd': Map[x, y] = Tile.Dirt; break;
@@ -86,8 +85,7 @@ namespace Wow
                 if (WilliX == -1)
                 {
                     throw new InvalidDataException("No Willi starting position given. Use 's'.");
-                }
-                WilliDead = false;
+                }                
             }
         }
 
@@ -98,11 +96,11 @@ namespace Wow
         /// <param name="y">y coordinate to query</param>
         /// <returns>whether the player can step into this location</returns>
         private bool IsSolid(int x, int y)
-        {
-            return Map[x, y] == Tile.Rock
-                || Map[x, y] == Tile.Wall
-                || x == 0 || y == 0
-                || x == MapWidth || y == MapHeight;
+        { 
+            return x < 0 || y < 0
+                || x >= MapWidth || y >= MapHeight
+                || Map[x, y] == Tile.Rock
+                || Map[x, y] == Tile.Wall;               
         }
 
         /// <summary>
@@ -111,38 +109,31 @@ namespace Wow
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private bool IsSmooth(int x, int y)
+        private bool IsEmpty(int x, int y)
         {
             return Map[x, y] == null && (WilliX != x || WilliY != y);
         }
 
-        /// <summary>
-        /// Update a column by making rocks fall
-        /// </summary>
-        /// <param name="x">The column to update</param>
-        /// <param name="y">The starting y value</param>
-        private void UpdateColumn(int x, int y)
+        private void FallRock(int x, int y)
         {
-            // Look downwards for a rock
-            while (Map[x, y] != Tile.Rock && y != MapHeight - 1) y++;
-
-            // If we're on map edge, no rocks found - we're done
-            if (y == MapHeight - 1) return;
-            
-            // If we're sitting on a rock, update that first
-            if (Map[x, y + 1] == Tile.Rock)
+            int drop = 0;
+            while (y != MapHeight && IsEmpty(x, y + drop + 1))
             {
-                UpdateColumn(x, y + 1);
+                drop++;
             }
-
-            // If we are on a rock, see how far we can drop.
-            int drop = 1;
-            while (IsSmooth(x, y + drop)) drop++;
-            Map[x, y] = null;
-            Map[x, y + drop - 1] = Tile.Rock;
-            if (drop > 1 && y + drop == WilliY)
+            Map[x, y] = null; // Remove the rock from it's current location
+            Map[x, y + drop] = Tile.Rock; // Place it as far down as it can go
+            if(drop >= 1 && WilliY == y + drop && WilliX == x)
             {
                 WilliDead = true;
+            }
+        }
+        
+        private void FallColumn(int x)
+        {
+            for (int y = MapHeight - 1; y >= 0; y--)
+            {
+                if (Map[x, y] == Tile.Rock) FallRock(x, y);
             }
         }
 
@@ -159,7 +150,7 @@ namespace Wow
                     if (Map[x, y] == Tile.Food) return false;
                 }
             }
-            return true;
+            return true; 
         }
 
         /// <summary>
@@ -170,12 +161,15 @@ namespace Wow
         /// <param name="y">The y coordinate to step into</param>
         private void TryStep(int x, int y)
         {
-            if (IsSolid(x, y)) return;
+            if (IsSolid(x, y))
+            {
+                return;
+            }
             int oldx = WilliX;
             WilliX = x;
             WilliY = y;
-            Map[x, y] = null; // Swallow 
-            UpdateColumn(oldx, 0);
+            Map[x, y] = null; // This turns any food/dirt into an empty space - i.e. he has eaten it 
+            FallColumn(oldx);
         }
 
         public void WalkUp()    { TryStep(WilliX, WilliY - 1); }
